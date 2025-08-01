@@ -1,0 +1,45 @@
+{
+  "name": "@unickq/wdio-adb-video-reporter",
+  "version": "0.0.2-beta.1",
+  "description": "WebDriverIO reporter for recording Android device screens using ADB",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/**/*"
+  ],
+  "scripts": {
+    "build": "rimraf dist && tsc",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "webdriverio",
+    "wdio",
+    "reporter",
+    "android",
+    "adb",
+    "video",
+    "recording",
+    "mobile",
+    "testing",
+    "appium"
+  ],
+  "author": "unickq",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/unickq/wdio-adb-video-reporter.git"
+  },
+  "bugs": {
+    "url": "https://github.com/unickq/wdio-adb-video-reporter/issues"
+  },
+  "homepage": "https://github.com/unickq/wdio-adb-video-reporter#readme",
+  "peerDependencies": {
+    "@wdio/reporter": "^9.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.1.0",
+    "rimraf": "^6.0.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2"
+  }
+}
