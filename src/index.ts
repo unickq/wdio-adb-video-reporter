@@ -55,32 +55,30 @@ export default class WdioAdbVideoReporter extends WDIOReporter {
   private readonly tempFilename = "wdio-screen-record.mp4";
   private currentSpecFile = "unknown";
 
-  // Simple logger
-  private log = {
-    info: (message: string, ...args: any[]) => {
-      if (this.logs) {
-        console.log(`[WdioAdbVideoReporter] INFO: ${message}`, ...args);
-      }
-    },
-    warn: (message: string, ...args: any[]) => {
-      if (this.logs) {
-        console.warn(`[WdioAdbVideoReporter] WARN: ${message}`, ...args);
-      }
-    },
-    error: (message: string, ...args: any[]) => {
-      if (this.logs) {
-        console.error(`[WdioAdbVideoReporter] ERROR: ${message}`, ...args);
-      }
-    },
-    debug: (message: string, ...args: any[]) => {
-      if (this.logs) {
-        console.debug(`[WdioAdbVideoReporter] DEBUG: ${message}`, ...args);
-      }
-    },
-  };
+  private createLog(enabled: boolean) {
+    const logWithLevel =
+      (level: string, consoleFn: (...args: any[]) => void) =>
+      (message: string, ...args: any[]) => {
+        if (enabled) {
+          const timestamp = new Date().toISOString();
+          consoleFn(
+            `${timestamp} ${level} WdioAdbVideoReporter: ${message}`,
+            ...args
+          );
+        }
+      };
+
+    return {
+      info: logWithLevel("INFO", console.log),
+      warn: logWithLevel("WARN", console.warn),
+      error: logWithLevel("ERROR", console.error),
+      debug: logWithLevel("DEBUG", console.debug),
+    };
+  }
+
+  private log: ReturnType<typeof this.createLog>;
 
   constructor(options: WdioAdbVideoReporterOptions = {}) {
-    // Ensure output directory exists before calling super
     const outputDir = options.outputDir || "./videos";
     if (!existsSync(outputDir)) {
       try {
@@ -90,7 +88,6 @@ export default class WdioAdbVideoReporter extends WDIOReporter {
       }
     }
 
-    // Disable file logging to prevent ENOENT errors
     const reporterOptions = {
       ...options,
       logFile: false, // Disable log file creation
@@ -104,6 +101,8 @@ export default class WdioAdbVideoReporter extends WDIOReporter {
     this.disabled = options.disabled || false;
     this.timestamp = options.timestamp !== false;
     this.logs = options.logs || false;
+
+    this.log = this.createLog(this.logs);
 
     if (this.disabled) {
       this.log.info("ADB Video Reporter is disabled");
@@ -131,28 +130,23 @@ export default class WdioAdbVideoReporter extends WDIOReporter {
       return;
     }
 
-    if (process.env.ADB_VIDEO === "true") {
-      const shouldSave =
-        process.env.ADB_VIDEO_ALL === "true" ||
-        this.saveAllVideos ||
-        this.hasFailedTests;
+    const shouldSave = this.saveAllVideos || this.hasFailedTests;
 
-      if (shouldSave) {
-        let filename: string;
-        if (this.timestamp) {
-          const timestamp = new Date()
-            .toISOString()
-            .replace(/[:.]/g, "-")
-            .slice(0, 19);
-          filename = `${timestamp}_${this.currentSpecFile}.mp4`;
-        } else {
-          filename = `${this.currentSpecFile}.mp4`;
-        }
-        const savePath = `${this.outputDir}/${filename}`;
-        this.stopRecording(savePath);
+    if (shouldSave) {
+      let filename: string;
+      if (this.timestamp) {
+        const timestamp = new Date()
+          .toISOString()
+          .replace(/[:.]/g, "-")
+          .slice(0, 19);
+        filename = `${timestamp}_${this.currentSpecFile}.mp4`;
       } else {
-        this.stopRecording();
+        filename = `${this.currentSpecFile}.mp4`;
       }
+      const savePath = `${this.outputDir}/${filename}`;
+      this.stopRecording(savePath);
+    } else {
+      this.stopRecording();
     }
   }
 

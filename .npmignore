@@ -1,0 +1,11 @@
+src/
+tests/
+*.test.js
+*.spec.js
+.git/
+.github/
+node_modules/
+coverage/
+.nyc_output/
+.DS_Store
+*.log
